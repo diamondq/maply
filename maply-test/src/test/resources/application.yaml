@@ -1,0 +1,9 @@
+maply:
+   instructions:
+      uris:
+      - file:///instructions/
+   bytesloader:
+      file:
+         enabled: true
+         dirs:
+         - sample_data

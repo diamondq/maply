@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info>
+  <mime-type type="application/x-yaml">
+    <sub-class-of type="text/plain" />
+    <glob pattern="*.yml" />
+  </mime-type>
+</mime-info>

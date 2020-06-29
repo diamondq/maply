@@ -1,0 +1,7 @@
+type: jxpath
+list:
+-  type: variable
+   source: /xml/data/person[@id="9"]
+   name: person
+-  source: $person/firstName
+   target: /dest/documentCatalog/acroForm/fields[fullyQualifiedName='Given Name Text Box']/value
