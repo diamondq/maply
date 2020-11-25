@@ -1,4 +1,4 @@
-package com.diamondq.maply.spi;
+package com.diamondq.maply.spi.old;
 
 import java.util.List;
 import java.util.Map;

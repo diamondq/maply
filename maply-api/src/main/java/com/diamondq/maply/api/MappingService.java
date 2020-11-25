@@ -1,9 +1,9 @@
 package com.diamondq.maply.api;
 
-import java.net.URI;
-import java.util.List;
-import java.util.Map;
+import java.util.function.Function;
 
+import org.apache.tika.mime.MediaType;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
@@ -12,58 +12,45 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public interface MappingService {
 
   /**
-   * Creates a new context
+   * Performs a mapping from source to destination
    * 
-   * @return the context
+   * @param <S> the source type
+   * @param <D> the destination type
+   * @param pDestMediaType the destination media type
+   * @param pSourceIdentifier the optional source identifier
+   * @param pSource the source
+   * @param pWith any optional extra data
+   * @return the destination object
    */
-  public MapContext createContext();
+  public <S, D> D map(MediaType pDestMediaType, @Nullable String pSourceIdentifier, @NonNull S pSource,
+    @NonNull Object @Nullable... pWith);
 
   /**
-   * Generate a new map of map objects
+   * Gets a function that will map between <S> and <D>
    * 
-   * @param pContext the context
-   * @return the map
+   * @param <S> the source type
+   * @param <D> the destination type
+   * @param pDestMediaType the destination media type
+   * @param pSourceIdentifier the optional source identifier
+   * @param pSourceMediaType the source media type
+   * @param pWith any additional sources
+   * @return the mapping function
    */
-  public Map<String, MapObject> getInitialMapObjects(MapContext pContext);
+  public <S, D> Function<@NonNull S, @NonNull D> getMappingFunction(MediaType pDestMediaType,
+    @Nullable String pSourceIdentifier, MediaType pSourceMediaType, @NonNull Object @Nullable... pWith);
 
   /**
-   * Loads a MapObject based on a URI
+   * Gets a function that will map between <S> and <D>
    * 
-   * @param pContext the context
-   * @param pURI the URI
-   * @return the MapObject
+   * @param <S> the source type
+   * @param <D> the destination type
+   * @param pDestClass the destination class
+   * @param pSourceIdentifier the optional source identifier
+   * @param pSourceClass the source class
+   * @param pWith any additional sources
+   * @return the mapping function
    */
-  public @Nullable MapObject loadMapObject(MapContext pContext, URI pURI);
-
-  /**
-   * Saves a MapObject to a URI
-   * 
-   * @param pContext the context
-   * @param pMapObject the object
-   * @param pTargetURI the target
-   */
-  public void saveMapObject(MapContext pContext, MapObject pMapObject, URI pTargetURI);
-
-  /**
-   * Finds the necessary instructions
-   * 
-   * @param pContext the context
-   * @param pSourceObjects the source objects
-   * @param pDest the destination object
-   * @return the instructions
-   */
-  public List<MapInstructions> loadMapInstructions(MapContext pContext, Map<String, MapObject> pSourceObjects,
-    MapObject pDest);
-
-  /**
-   * Performs the mapping using a series of map objects and follows a set of instructions
-   * 
-   * @param pContext the context
-   * @param pSourceObjects the map of Map Objects
-   * @param pDest the source object
-   * @param pInstructions the instructions
-   */
-  public void map(MapContext pContext, Map<String, MapObject> pSourceObjects, MapObject pDest,
-    List<MapInstructions> pInstructions);
+  public <S, D> Function<@NonNull S, @NonNull D> getMappingFunction(Class<D> pDestClass,
+    @Nullable String pSourceIdentifier, Class<S> pSourceClass, @NonNull Object @Nullable... pWith);
 
 }

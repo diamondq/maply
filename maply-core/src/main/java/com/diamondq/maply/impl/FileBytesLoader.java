@@ -1,14 +1,13 @@
 package com.diamondq.maply.impl;
 
-import com.diamondq.maply.api.MapContext;
-import com.diamondq.maply.spi.BytesLoader;
-import com.diamondq.maply.spi.MapBytesData;
+import com.diamondq.maply.advapi.MapContext;
+import com.diamondq.maply.spi.old.BytesLoader;
+import com.diamondq.maply.spi.old.MapBytesData;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.net.MediaType;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
@@ -29,6 +28,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.tika.Tika;
+import org.apache.tika.mime.MediaType;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -126,7 +126,7 @@ public class FileBytesLoader implements BytesLoader {
   }
 
   /**
-   * @see com.diamondq.maply.spi.BytesLoader#getSupportedSchemes()
+   * @see com.diamondq.maply.spi.old.BytesLoader#getSupportedSchemes()
    */
   @Override
   public Set<String> getSupportedSchemes() {
@@ -134,7 +134,7 @@ public class FileBytesLoader implements BytesLoader {
   }
 
   /**
-   * @see com.diamondq.maply.spi.BytesLoader#supportsURI(boolean, java.net.URI)
+   * @see com.diamondq.maply.spi.old.BytesLoader#supportsURI(boolean, java.net.URI)
    */
   @Override
   public boolean supportsURI(boolean pIsLoad, URI pURI) {
@@ -142,7 +142,7 @@ public class FileBytesLoader implements BytesLoader {
   }
 
   /**
-   * @see com.diamondq.maply.spi.BytesLoader#load(com.diamondq.maply.api.MapContext, java.net.URI)
+   * @see com.diamondq.maply.spi.old.BytesLoader#load(com.diamondq.maply.advapi.MapContext, java.net.URI)
    */
   @Override
   public @Nullable MapBytesData load(MapContext pContext, URI pURI) {
@@ -162,7 +162,7 @@ public class FileBytesLoader implements BytesLoader {
   }
 
   /**
-   * @see com.diamondq.maply.spi.BytesLoader#save(com.diamondq.maply.api.MapContext, java.net.URI,
+   * @see com.diamondq.maply.spi.old.BytesLoader#save(com.diamondq.maply.advapi.MapContext, java.net.URI,
    *      com.google.common.net.MediaType, byte[])
    */
   @Override

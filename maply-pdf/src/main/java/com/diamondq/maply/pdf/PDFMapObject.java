@@ -1,6 +1,6 @@
 package com.diamondq.maply.pdf;
 
-import com.diamondq.maply.spi.AbstractMapObject;
+import com.diamondq.maply.spi.old.AbstractMapObject;
 import com.google.common.net.MediaType;
 
 import org.apache.commons.jxpath.Container;

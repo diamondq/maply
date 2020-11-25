@@ -1,6 +1,6 @@
-package com.diamondq.maply.spi;
+package com.diamondq.maply.spi.old;
 
-import com.google.common.net.MediaType;
+import org.apache.tika.mime.MediaType;
 
 public class MapBytesData {
 
@@ -24,7 +24,7 @@ public class MapBytesData {
 
   private MapBytesData() {
     location = "";
-    contentType = MediaType.ANY_TYPE;
+    contentType = new MediaType("*", "*");
     data = new byte[0];
   }
 }

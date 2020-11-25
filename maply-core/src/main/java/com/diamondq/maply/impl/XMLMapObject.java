@@ -1,9 +1,9 @@
 package com.diamondq.maply.impl;
 
-import com.diamondq.maply.spi.AbstractMapObject;
-import com.google.common.net.MediaType;
+import com.diamondq.maply.spi.old.AbstractMapObject;
 
 import org.apache.commons.jxpath.Container;
+import org.apache.tika.mime.MediaType;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.w3c.dom.Document;
 

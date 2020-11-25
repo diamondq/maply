@@ -1,6 +1,5 @@
-package com.diamondq.maply.api;
+package com.diamondq.maply.advapi;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
@@ -8,7 +7,13 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 public interface MapContext {
 
-  public <T> void set(String pKey, @NonNull T pValue);
+  // public <T> void set(String pKey, @NonNull T pValue);
 
+  /**
+   * @param <T>
+   * @param pKey
+   * @param pClass
+   * @return the value
+   */
   public <T> @Nullable T get(String pKey, Class<T> pClass);
 }

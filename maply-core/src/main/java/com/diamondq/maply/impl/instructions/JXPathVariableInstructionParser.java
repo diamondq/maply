@@ -1,8 +1,8 @@
 package com.diamondq.maply.impl.instructions;
 
-import com.diamondq.maply.spi.AbstractInstructionParser2;
-import com.diamondq.maply.spi.Instruction;
-import com.diamondq.maply.spi.InstructionSetup;
+import com.diamondq.maply.spi.old.AbstractInstructionParser2;
+import com.diamondq.maply.spi.old.Instruction;
+import com.diamondq.maply.spi.old.InstructionSetup;
 
 import java.util.List;
 import java.util.Map;
@@ -26,7 +26,7 @@ public class JXPathVariableInstructionParser extends AbstractInstructionParser2<
   }
 
   /**
-   * @see com.diamondq.maply.spi.AbstractInstructionParser2#getSetup()
+   * @see com.diamondq.maply.spi.old.AbstractInstructionParser2#getSetup()
    */
   @Override
   protected @Nullable InstructionSetup getSetup() {
@@ -34,7 +34,7 @@ public class JXPathVariableInstructionParser extends AbstractInstructionParser2<
   }
 
   /**
-   * @see com.diamondq.maply.spi.AbstractInstructionParser2#process(java.lang.String, java.lang.String,
+   * @see com.diamondq.maply.spi.old.AbstractInstructionParser2#process(java.lang.String, java.lang.String,
    *      java.lang.Object, java.lang.Object, java.util.List, java.util.Map)
    */
   @Override

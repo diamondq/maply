@@ -11,8 +11,12 @@
   <name>DiamondQ Maply: API</name>
   <dependencies>
     <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
+      <groupId>org.apache.tika</groupId>
+      <artifactId>tika-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.diamondq.common</groupId>
+      <artifactId>common-utils</artifactId>
     </dependency>
   </dependencies>
 </project>

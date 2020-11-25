@@ -1,6 +1,6 @@
 package com.diamondq.maply.impl;
 
-import com.diamondq.maply.spi.ExecutionContext;
+import com.diamondq.maply.spi.old.ExecutionContext;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -16,7 +16,7 @@ public class ExecutionContextImpl implements ExecutionContext {
   }
 
   /**
-   * @see com.diamondq.maply.api.MapContext#set(java.lang.String, java.lang.Object)
+   * @see com.diamondq.maply.advapi.MapContext#set(java.lang.String, java.lang.Object)
    */
   @Override
   public <T> void set(String pKey, @NonNull T pValue) {
@@ -24,7 +24,7 @@ public class ExecutionContextImpl implements ExecutionContext {
   }
 
   /**
-   * @see com.diamondq.maply.api.MapContext#get(java.lang.String, java.lang.Class)
+   * @see com.diamondq.maply.advapi.MapContext#get(java.lang.String, java.lang.Class)
    */
   @Override
   public <T> @Nullable T get(String pKey, Class<T> pClass) {

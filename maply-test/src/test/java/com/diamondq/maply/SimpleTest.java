@@ -3,10 +3,11 @@ package com.diamondq.maply;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.diamondq.common.injection.InjectionContext;
-import com.diamondq.maply.api.MapContext;
-import com.diamondq.maply.api.MapInstructions;
-import com.diamondq.maply.api.MapObject;
+import com.diamondq.maply.advapi.MapContext;
+import com.diamondq.maply.advapi.MapInstructions;
+import com.diamondq.maply.advapi.MapObject;
 import com.diamondq.maply.api.MappingService;
+import com.google.common.net.MediaType;
 
 import java.io.IOException;
 import java.net.URI;
@@ -43,10 +44,10 @@ public class SimpleTest {
   }
 
   @Test
-  public void test() {
+  public void testPDF() {
     MappingService mappingService = sAppContext.findBean(MappingService.class, null).get();
-    MapContext context = mappingService.createContext();
-    Map<String, MapObject> sourceMap = mappingService.getInitialMapObjects(context);
+
+    mappingService.map(MediaType.PDF, null, URI.create("file:///data/data.xml"), URI.create("file:///data/test.pdf"));
     MapObject dest = Objects.requireNonNull(mappingService.loadMapObject(context, URI.create("file:///data/test.pdf")));
     MapObject data = Objects.requireNonNull(mappingService.loadMapObject(context, URI.create("file:///data/data.xml")));
     sourceMap.put("xml", data);

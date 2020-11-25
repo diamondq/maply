@@ -1,9 +1,9 @@
 package com.diamondq.maply.impl.instructions;
 
-import com.diamondq.maply.api.MapContext;
-import com.diamondq.maply.api.MapObject;
-import com.diamondq.maply.spi.ExecutionContext;
-import com.diamondq.maply.spi.Instruction;
+import com.diamondq.maply.advapi.MapContext;
+import com.diamondq.maply.advapi.MapObject;
+import com.diamondq.maply.spi.old.ExecutionContext;
+import com.diamondq.maply.spi.old.Instruction;
 
 import java.util.Map;
 import java.util.Objects;
@@ -23,8 +23,8 @@ public class JXPathMapInstruction implements Instruction {
   }
 
   /**
-   * @see com.diamondq.maply.spi.Instruction#execute(com.diamondq.maply.api.MapContext,
-   *      com.diamondq.maply.spi.ExecutionContext, java.util.Map)
+   * @see com.diamondq.maply.spi.old.Instruction#execute(com.diamondq.maply.advapi.MapContext,
+   *      com.diamondq.maply.spi.old.ExecutionContext, java.util.Map)
    */
   @Override
   public void execute(MapContext pContext, ExecutionContext pExecutionContext, Map<String, MapObject> pObjects) {

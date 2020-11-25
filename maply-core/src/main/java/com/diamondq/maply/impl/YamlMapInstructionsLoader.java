@@ -1,16 +1,14 @@
 package com.diamondq.maply.impl;
 
-import com.diamondq.common.mediatype.CommonMediaTypes;
-import com.diamondq.maply.api.MapContext;
-import com.diamondq.maply.api.MapInstructions;
-import com.diamondq.maply.spi.Instruction;
-import com.diamondq.maply.spi.InstructionParser;
-import com.diamondq.maply.spi.InstructionSetup;
-import com.diamondq.maply.spi.MapBytesData;
-import com.diamondq.maply.spi.MapInstructionsLoader;
+import com.diamondq.maply.advapi.MapContext;
+import com.diamondq.maply.advapi.MapInstructions;
+import com.diamondq.maply.spi.old.Instruction;
+import com.diamondq.maply.spi.old.InstructionParser;
+import com.diamondq.maply.spi.old.InstructionSetup;
+import com.diamondq.maply.spi.old.MapBytesData;
+import com.diamondq.maply.spi.old.MapInstructionsLoader;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.net.MediaType;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -25,6 +23,7 @@ import java.util.concurrent.ConcurrentMap;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.tika.mime.MediaType;
 import org.yaml.snakeyaml.Yaml;
 
 @Singleton
@@ -35,7 +34,7 @@ public class YamlMapInstructionsLoader implements MapInstructionsLoader {
   private static final Set<String>    sSUPPORTED_FILE_EXTENSIONS;
 
   static {
-    sSUPPORTED_MEDIA_TYPES = ImmutableSet.of(CommonMediaTypes.APPLICATION_YAML);
+    sSUPPORTED_MEDIA_TYPES = ImmutableSet.of(MediaType.application("x-yaml"));
     sSUPPORTED_FILE_EXTENSIONS = ImmutableSet.<String> builder().add("yaml").add("yml").build();
   }
 
@@ -61,7 +60,7 @@ public class YamlMapInstructionsLoader implements MapInstructionsLoader {
   }
 
   /**
-   * @see com.diamondq.maply.spi.MapInstructionsLoader#getSupportedFileExtensions()
+   * @see com.diamondq.maply.spi.old.MapInstructionsLoader#getSupportedFileExtensions()
    */
   @Override
   public Set<String> getSupportedFileExtensions() {
@@ -69,7 +68,7 @@ public class YamlMapInstructionsLoader implements MapInstructionsLoader {
   }
 
   /**
-   * @see com.diamondq.maply.spi.MapInstructionsLoader#getSupportedMediaTypes()
+   * @see com.diamondq.maply.spi.old.MapInstructionsLoader#getSupportedMediaTypes()
    */
   @Override
   public Set<MediaType> getSupportedMediaTypes() {
@@ -77,7 +76,7 @@ public class YamlMapInstructionsLoader implements MapInstructionsLoader {
   }
 
   /**
-   * @see com.diamondq.maply.spi.MapInstructionsLoader#supportsContent(boolean, com.google.common.net.MediaType)
+   * @see com.diamondq.maply.spi.old.MapInstructionsLoader#supportsContent(boolean, org.apache.tika.mime.MediaType)
    */
   @Override
   public boolean supportsContent(boolean pIsLoad, MediaType pContentType) {
@@ -85,8 +84,8 @@ public class YamlMapInstructionsLoader implements MapInstructionsLoader {
   }
 
   /**
-   * @see com.diamondq.maply.spi.MapInstructionsLoader#load(com.diamondq.maply.api.MapContext,
-   *      com.diamondq.maply.spi.MapBytesData)
+   * @see com.diamondq.maply.spi.old.MapInstructionsLoader#load(com.diamondq.maply.advapi.MapContext,
+   *      com.diamondq.maply.spi.old.MapBytesData)
    */
   @Override
   public MapInstructions load(MapContext pContext, MapBytesData pBytesData) {

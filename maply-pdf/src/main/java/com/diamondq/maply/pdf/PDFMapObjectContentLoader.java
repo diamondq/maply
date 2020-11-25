@@ -1,10 +1,10 @@
 package com.diamondq.maply.pdf;
 
 import com.diamondq.common.mediatype.CommonMediaTypes;
-import com.diamondq.maply.api.MapContext;
-import com.diamondq.maply.api.MapObject;
-import com.diamondq.maply.spi.MapBytesData;
-import com.diamondq.maply.spi.MapObjectContentLoader;
+import com.diamondq.maply.advapi.MapContext;
+import com.diamondq.maply.advapi.MapObject;
+import com.diamondq.maply.spi.old.MapBytesData;
+import com.diamondq.maply.spi.old.MapObjectContentLoader;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.net.MediaType;
 
@@ -35,7 +35,7 @@ public class PDFMapObjectContentLoader implements MapObjectContentLoader {
   }
 
   /**
-   * @see com.diamondq.maply.spi.MapObjectContentLoader#getSupportedMediaTypes()
+   * @see com.diamondq.maply.spi.old.MapObjectContentLoader#getSupportedMediaTypes()
    */
   @Override
   public Set<MediaType> getSupportedMediaTypes() {
@@ -43,7 +43,7 @@ public class PDFMapObjectContentLoader implements MapObjectContentLoader {
   }
 
   /**
-   * @see com.diamondq.maply.spi.MapObjectContentLoader#supportsContent(boolean, com.google.common.net.MediaType)
+   * @see com.diamondq.maply.spi.old.MapObjectContentLoader#supportsContent(boolean, com.google.common.net.MediaType)
    */
   @Override
   public boolean supportsContent(boolean pIsLoad, MediaType pMediaType) {
@@ -51,8 +51,8 @@ public class PDFMapObjectContentLoader implements MapObjectContentLoader {
   }
 
   /**
-   * @see com.diamondq.maply.spi.MapObjectContentLoader#load(com.diamondq.maply.api.MapContext, java.net.URI,
-   *      java.lang.String, com.diamondq.maply.spi.MapBytesData)
+   * @see com.diamondq.maply.spi.old.MapObjectContentLoader#load(com.diamondq.maply.advapi.MapContext, java.net.URI,
+   *      java.lang.String, com.diamondq.maply.spi.old.MapBytesData)
    */
   @Override
   public MapObject load(MapContext pContext, URI pOriginalURI, String pIdentifier, MapBytesData pBytesData) {
@@ -66,8 +66,8 @@ public class PDFMapObjectContentLoader implements MapObjectContentLoader {
   }
 
   /**
-   * @see com.diamondq.maply.spi.MapObjectContentLoader#save(com.diamondq.maply.api.MapContext,
-   *      com.google.common.net.MediaType, com.diamondq.maply.api.MapObject)
+   * @see com.diamondq.maply.spi.old.MapObjectContentLoader#save(com.diamondq.maply.advapi.MapContext,
+   *      com.google.common.net.MediaType, com.diamondq.maply.advapi.MapObject)
    */
   @Override
   public byte[] save(MapContext pContext, MediaType pMediaType, MapObject pMapObject) {

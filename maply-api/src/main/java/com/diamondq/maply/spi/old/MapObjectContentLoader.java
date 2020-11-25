@@ -1,11 +1,12 @@
-package com.diamondq.maply.spi;
+package com.diamondq.maply.spi.old;
 
-import com.diamondq.maply.api.MapContext;
-import com.diamondq.maply.api.MapObject;
-import com.google.common.net.MediaType;
+import com.diamondq.maply.advapi.MapContext;
+import com.diamondq.maply.advapi.MapObject;
 
 import java.net.URI;
 import java.util.Set;
+
+import org.apache.tika.mime.MediaType;
 
 public interface MapObjectContentLoader {
   /**

@@ -1,11 +1,11 @@
-package com.diamondq.maply.spi;
+package com.diamondq.maply.spi.old;
 
-import com.diamondq.maply.api.MapContext;
-import com.google.common.net.MediaType;
+import com.diamondq.maply.advapi.MapContext;
 
 import java.net.URI;
 import java.util.Set;
 
+import org.apache.tika.mime.MediaType;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**

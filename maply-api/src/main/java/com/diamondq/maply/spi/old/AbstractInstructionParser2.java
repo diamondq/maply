@@ -1,4 +1,4 @@
-package com.diamondq.maply.spi;
+package com.diamondq.maply.spi.old;
 
 import java.util.List;
 import java.util.Map;
@@ -21,7 +21,7 @@ public abstract class AbstractInstructionParser2<P1, P2> extends BaseAbstractIns
   }
 
   /**
-   * @see com.diamondq.maply.spi.InstructionParser#parseInstruction(java.lang.String, java.lang.String,
+   * @see com.diamondq.maply.spi.old.InstructionParser#parseInstruction(java.lang.String, java.lang.String,
    *      java.lang.String, java.lang.String, java.util.Map, java.util.List, java.util.Map)
    */
   @Override

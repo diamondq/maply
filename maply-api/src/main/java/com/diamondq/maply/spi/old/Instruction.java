@@ -1,7 +1,7 @@
-package com.diamondq.maply.spi;
+package com.diamondq.maply.spi.old;
 
-import com.diamondq.maply.api.MapContext;
-import com.diamondq.maply.api.MapObject;
+import com.diamondq.maply.advapi.MapContext;
+import com.diamondq.maply.advapi.MapObject;
 
 import java.util.Map;
 
