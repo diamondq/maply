@@ -405,7 +405,8 @@ public class MappingServiceImpl implements AdvancedMappingService {
 
     /* There isn't a direct map. Attempt to find a distant path */
 
-    throw new IllegalStateException("Unable to find mapping instructions from " + pSource.toString() + " to " + pDest.toString());
+    throw new IllegalStateException(
+      "Unable to find mapping instructions from " + pSource.toString() + " to " + pDest.toString());
   }
   //
   // for (String extension : mSupportedFileExtensions) {
@@ -569,21 +570,23 @@ public class MappingServiceImpl implements AdvancedMappingService {
       /* Return a function */
 
       return (s) -> {
+        try (Context ctx2 = mContextFactory.newContext(MappingServiceImpl.class, this, s, pSourceMediaType, pDestMediaType)) {
+          
+          MapObject localDestMapObject = destMapObject.copy();
+          MapObject srcMapObject = createMapObject(s, pSourceIdentifier);
 
-        MapObject localDestMapObject = destMapObject.copy();
-        MapObject srcMapObject = createMapObject(s, pSourceIdentifier);
+          /* Now perform the maps */
 
-        /* Now perform the maps */
+          for (MapInstructions instr : mapInstructions) {
+            instr.map(mapContext, localDestMapObject, srcMapObject, withArray);
+          }
 
-        for (MapInstructions instr : mapInstructions) {
-          instr.map(mapContext, localDestMapObject, srcMapObject, withArray);
+          /* Return the result */
+
+          @SuppressWarnings("unchecked")
+          D result = (D) Objects.requireNonNull(localDestMapObject.getValue());
+          return result;
         }
-
-        /* Return the result */
-
-        @SuppressWarnings("unchecked")
-        D result = (D) Objects.requireNonNull(localDestMapObject.getValue());
-        return result;
       };
     }
   }
