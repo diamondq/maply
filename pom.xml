@@ -17,7 +17,9 @@
     <module>maply-core</module>
     <module>maply-masterparent</module>
     <module>maply-parent</module>
+    <!--
     <module>maply-pdf</module>
     <module>maply-test</module>
+    -->
   </modules>
 </project>
