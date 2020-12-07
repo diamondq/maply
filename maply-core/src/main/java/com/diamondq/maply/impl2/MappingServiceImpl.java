@@ -239,7 +239,7 @@ public class MappingServiceImpl implements MappingService {
 
               A newWork = new A(list, work.withs, work.instructions);
               stack.push(newWork);
-              
+
               // for (Location testNeed : reg.needs) {
               // generateInstr(testNeed, pWithList);
               // }
@@ -307,8 +307,9 @@ public class MappingServiceImpl implements MappingService {
       if ((highestReg == null) || (highestLoc == null))
         throw new IllegalStateException("No such path to generate " + pWant.toString() + " with " + pWithList);
 
-      return new MapInstructionDetails(highestReg.provider, Collections.singletonList(highestLoc),
-        Collections.emptyList());
+      throw new UnsupportedOperationException();
+      // return new MapInstructionDetails(highestReg.provider, Collections.singletonList(highestLoc),
+      // Collections.emptyList());
     }
   }
 
