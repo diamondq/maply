@@ -1,0 +1,139 @@
+= Architecture of Maply
+
+== Flow
+[plantuml, flow-architecture, png]
+----
+@startuml
+
+object "<WANT> UserData" as UserData #lightgreen {
+	id = 1234
+	firstName = ?
+	lastName = ? 
+}
+
+note right of UserData
+	The want contains fixed properties
+	(in this case <b>id</b>) that are provided,
+	and requested properties
+	(in this case <b>firstName</b> and <b>lastName</b>)
+	that must be calculated.
+	Also indicates a format.
+end note
+
+object map_c {
+	to = [ { type=UserData, where=[#id=<<A>>], format=Java } ]
+	from = [ { type=UserData#firstName, where=[<color:red>parent</color>#id=<<A>>] }
+		\t{ type=UserData#lastName, where=[<color:red>parent</color>#id=<<A>>] } ]
+}
+
+note right of map_c
+	This indicates that it's capable of generating
+	a "Java Class" of UserData that will
+	have an id of <<A>> (a variable).
+end note
+
+UserData --> map_c
+
+object map1 {
+	to = [ { type=UserData#firstName, where=[<color:red>parent</color>#id=<<A>>] } ]
+	from = [ { type=BOUserData#firstName, where=[<color:red>parent</color>#id=<<A>>] } ]
+}
+
+note top of map1
+	This indicates that it can get the firstName
+	from a BOUserData firstName.
+end note
+
+map_c --> map1
+
+object map2 {
+	to = [ { type=BOUserData#firstName, where=[<color:red>parent</color>#id=<<A>>] } ]
+	from = [ { type=BOUserData, where=[id=<<A>>] } ]
+}
+
+map1 --> map2
+
+object map1B {
+	to = [ { type=UserData#lastName, where=[<color:red>parent</color>#id=<<A>>] } ]
+	from = [ { type=BOUserData#lastName, where=[<color:red>parent</color>#id=<<A>>] } ]
+}
+
+map_c --> map1B
+
+object map2B {
+	to = [ { type=BOUserData#lastName, where=[<color:red>parent</color>#id=<<A>>] } ]
+	from = [ { type=BOUserData, where=[id=<<A>>] } ]
+}
+
+map1B --> map2B
+
+object map3 {
+	to = [ { type=BOUserData, where=[id=<<A>>] } ]
+	from = [ { type=LoggedInUser } ]
+	if = [ { type=LoggedInUser, where=[id=<<A>>] } ]
+	priority = 10
+}
+
+map2 --> map3
+map2B --> map3
+
+object map4 {
+	to = [ { type=LoggedInUser } ]
+}
+
+map3 --> map4
+
+object map5 {
+	to = [ { type=BOUserData, where=[id=<<A>>] } ]
+	priority = 1
+}
+
+map2 --> map5
+map2B --> map5
+
+@enduml
+----
+
+== Classes
+ 
+[plantuml, class-architecture, png]
+----
+@startuml
+
+class MapMeta {
+	Location[] to
+	Location[] from
+	Location[] if
+	int priority
+}
+
+class DataType {
+	String namespace
+	String name
+	# String child
+}
+
+class Format <<String>>  {
+}
+
+class Where  {
+	String loc
+	String op
+	String var
+}
+
+class Location {
+	DataType type
+	Format format
+	Where[] where
+}
+
+DataType <--* Location : type
+Format <--* Location : format
+Where "many" <--* "1" Location : where
+MapMeta "1" *--> "many" Location : to
+MapMeta "1" *--> "many" Location : from
+MapMeta "1" *--> "many" Location : if
+
+@enduml
+----
