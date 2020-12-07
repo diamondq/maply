@@ -77,6 +77,7 @@ public class FileBytesLoader implements BytesLoader {
     mCachedFiles = CacheBuilder.newBuilder().expireAfterWrite(60, TimeUnit.SECONDS).maximumWeight(pMaxBytesToCache)
       .<String, MapBytesData> weigher((k, v) -> v.data.length + v.contentType.toString().length() + 1)
       .build(new CacheLoader<String, MapBytesData>() {
+        @SuppressWarnings("null")
         @Override
         public MapBytesData load(String pPath) throws Exception {
 
@@ -163,7 +164,7 @@ public class FileBytesLoader implements BytesLoader {
 
   /**
    * @see com.diamondq.maply.spi.old.BytesLoader#save(com.diamondq.maply.advapi.MapContext, java.net.URI,
-   *      com.google.common.net.MediaType, byte[])
+   *      org.apache.tika.mime.MediaType, byte[])
    */
   @Override
   public void save(MapContext pContext, URI pTargetURI, MediaType pContentType, byte[] pBytes) {
