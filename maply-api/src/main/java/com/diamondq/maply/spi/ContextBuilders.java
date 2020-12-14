@@ -3,6 +3,7 @@ package com.diamondq.maply.spi;
 import com.diamondq.maply.api2.ToStringIndented;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,11 +30,11 @@ public class ContextBuilders {
     sNotIndentedCol = (s) -> {
       if (s == null)
         return null;
-      if (s instanceof List == false)
+      if (s instanceof Collection == false)
         throw new IllegalStateException();
       List<String> result = new ArrayList<>();
       @SuppressWarnings("unchecked")
-      List<ToStringIndented> list = (List<ToStringIndented>) s;
+      Collection<ToStringIndented> list = (Collection<ToStringIndented>) s;
       for (ToStringIndented obj : list) {
         result.add(obj.toStringIndented(new StringBuilder(), "", false).toString());
       }

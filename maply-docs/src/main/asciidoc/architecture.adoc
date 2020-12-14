@@ -6,9 +6,7 @@
 @startuml
 
 object "<WANT> UserData" as UserData #lightgreen {
-	id = 1234
-	firstName = ?
-	lastName = ? 
+	 from = [ JavaClass/UserData[id=<<A>>] ]
 }
 
 note right of UserData
@@ -20,10 +18,12 @@ note right of UserData
 	Also indicates a format.
 end note
 
-object map_c {
-	to = [ { type=UserData, where=[#id=<<A>>], format=Java } ]
-	from = [ { type=UserData#firstName, where=[<color:red>parent</color>#id=<<A>>] }
-		\t{ type=UserData#lastName, where=[<color:red>parent</color>#id=<<A>>] } ]
+abstract "ObjectConstructor" as map_c {
+	to = [ JavaClass/* ]
+	==
+	to = [ JavaClass/UserData[id=<<A>>] ]
+	from = [ JavaClass/UserData[id=<<A>>]/firstName,
+		\tJavaClass/UserData[id=<<A>>]/lastName ]
 }
 
 note right of map_c
@@ -34,9 +34,11 @@ end note
 
 UserData --> map_c
 
-object map1 {
-	to = [ { type=UserData#firstName, where=[<color:red>parent</color>#id=<<A>>] } ]
-	from = [ { type=BOUserData#firstName, where=[<color:red>parent</color>#id=<<A>>] } ]
+abstract "ObjectToObjectMapping" as map1 {
+	to = [ JavaClass/UserData[*]/firstName ]
+	==
+	to = [ JavaClass/UserData[id=<<A>>]/firstName ]
+	from = [ JavaClass/BOUserData[id=<<A>>]/firstName ]
 }
 
 note top of map1
@@ -46,50 +48,155 @@ end note
 
 map_c --> map1
 
-object map2 {
-	to = [ { type=BOUserData#firstName, where=[<color:red>parent</color>#id=<<A>>] } ]
-	from = [ { type=BOUserData, where=[id=<<A>>] } ]
+abstract "ObjectExpander" as map2 {
+	to = [ JavaClass/BOUserData[*]/firstName,
+		\tJavaClass/BOUserData[*]/lastName,
+		\tJavaClass/BOUserData[*]/id ]
+	==
+	to = [ JavaClass/BOUserData[id=<<A>>]/firstName,
+		\tJavaClass/BOUserData[id=<<A>>]/lastName,
+		\tJavaClass/BOUserData[id=<<A>>]/id ]
+	from = [ JavaClass/BOUserData[id=<<A>>] ]
 }
 
 map1 --> map2
 
-object map1B {
-	to = [ { type=UserData#lastName, where=[<color:red>parent</color>#id=<<A>>] } ]
-	from = [ { type=BOUserData#lastName, where=[<color:red>parent</color>#id=<<A>>] } ]
+abstract "ObjectToObjectMapping" as map1B {
+	to = [ JavaClass/UserData[*]/lastName ]
+	==
+	to = [ JavaClass/UserData[id=<<A>>]/lastName ]
+	from = [ JavaClass/BOUserData[id=<<A>>]/lastName ]
 }
 
 map_c --> map1B
 
-object map2B {
-	to = [ { type=BOUserData#lastName, where=[<color:red>parent</color>#id=<<A>>] } ]
-	from = [ { type=BOUserData, where=[id=<<A>>] } ]
-}
+map1B --> map2
 
-map1B --> map2B
-
-object map3 {
-	to = [ { type=BOUserData, where=[id=<<A>>] } ]
-	from = [ { type=LoggedInUser } ]
-	if = [ { type=LoggedInUser, where=[id=<<A>>] } ]
+abstract map3 {
+	to = [ JavaClass/BOUserData[*] ]
 	priority = 10
+	==
+	to = [ JavaClass/BOUserData[id=<<A>>] ]
+	from = [ JavaClass/LoggedInUser ]
+	if = [ JavaClass/LoggedInUser[id=<<A>>] ]
 }
 
 map2 --> map3
-map2B --> map3
 
-object map4 {
-	to = [ { type=LoggedInUser } ]
+abstract map4 {
+	to = [ JavaClass/LoggedInUser ]
+	==
+	to = [ JavaClass/LoggedInUser ]
 }
 
 map3 --> map4
 
-object map5 {
-	to = [ { type=BOUserData, where=[id=<<A>>] } ]
+abstract map5 {
+	to = [ JavaClass/BOUserData[*] ]
 	priority = 1
+	==
+	to = [ JavaClass/BOUserData[id=<<A>>] ]
 }
 
 map2 --> map5
-map2B --> map5
+
+@enduml
+----
+
+[plantuml, flow-stack, png]
+----
+@startuml
+allow_mixing
+
+frame Frame1 as "Frame 1" {
+	object "LoggedInUser" as LoggedInUser1  {
+		id = "1234"
+		firstName = "Mike"
+		lastName = "Mansell"
+	} 
+}
+frame Frame2 as "Frame 2"{
+	object "LoggedInUser" as LoggedInUser2 {
+		id = "1234"
+		firstName = "Mike"
+		lastName = "Mansell"
+	} 
+	object "BOUserData" as BOUserData2  {
+		id = "1234"
+		firstName = "Mike"
+		lastName = "Mansell"
+	}
+}
+frame Frame3 as "Frame 3"{
+	object "LoggedInUser" as LoggedInUser3  {
+		id = "1234"
+		firstName = "Mike"
+		lastName = "Mansell"
+	} 
+	object "BOUserData" as BOUserData3 {
+		id = "1234"
+		firstName = "Mike"
+		lastName = "Mansell"
+	}
+	object "BOUserData#firstName" as BOUserDataFirstName3 {
+		value = "Mike"
+	}
+}
+frame Frame4 as "Frame 4"{
+	object "LoggedInUser" as LoggedInUser4  {
+		id = "1234"
+		firstName = "Mike"
+		lastName = "Mansell"
+	} 
+	object "BOUserData" as BOUserData4 {
+		id = "1234"
+		firstName = "Mike"
+		lastName = "Mansell"
+	}
+	object "BOUserData#firstName" as BOUserDataFirstName4 {
+		value = "Mike"
+	}
+	object "UserData#firstName" as UserDataFirstName4 {
+		value = "Mike"
+	}
+}
+frame Frame5 as "Frame 5"{
+	abstract "LoggedInUser" as LoggedInUser5 {
+		id = "1234"
+		firstName = "Mike"
+		lastName = "Mansell"
+		==
+	} 
+	abstract "BOUserData" as BOUserData5 {
+		id = "1234"
+		firstName = "Mike"
+		lastName = "Mansell"
+		==
+		id = "1234"
+	}
+	abstract "BOUserData#firstName" as BOUserDataFirstName5 {
+		value = "Mike"
+		==
+		parent.id = "1234"
+	}
+	abstract "UserData#firstName" as UserDataFirstName5 {
+		value = "Mike"
+		==
+		parent.id = "1234"
+	}
+	abstract "UserData" as UserData5 {
+		id = "1234"
+		firstName = "Mike"
+		lastName = "Mansell"
+		==
+		id = "1234"
+	}
+}
+
+Frame1 --> Frame2
+Frame2 --> Frame3
+Frame3 --> Frame4
+Frame4 --> Frame5
 
 @enduml
 ----

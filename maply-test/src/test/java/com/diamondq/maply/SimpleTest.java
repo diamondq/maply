@@ -6,10 +6,14 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import com.diamondq.common.context.Context;
 import com.diamondq.common.context.ContextFactory;
 import com.diamondq.common.injection.InjectionContext;
+import com.diamondq.maply.api2.BaseObjectToObjectMapping;
 import com.diamondq.maply.api2.MappingService;
-import com.diamondq.maply.api2.PreparedMap;
+import com.diamondq.maply.api2.PreparedOperation;
 
 import java.io.IOException;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.junit.jupiter.api.AfterAll;
@@ -48,20 +52,37 @@ public class SimpleTest {
     }
   }
 
+  @Singleton
+  public static class TestMap extends BaseObjectToObjectMapping {
+
+    @Inject
+    public TestMap() {
+      super(to(SimpleData.class) //
+        /* Simple map from SimpleInfo to SimpleData */
+        .from(SimpleInfo.class) //
+        .eq("id") //
+        .eq("firstName") //
+        .eq("lastName") //
+        .build()
+      //
+      );
+    }
+  }
+
   @Test
   public void test() {
     try (Context ctx = mContextFactory.newContext(SimpleTest.class, this)) {
       MappingService ms = sAppContext.findBean(MappingService.class, null).get();
 
-      /* Build a map */
+      /* Build an operation */
 
-      PreparedMap map = ms.preparedMap().want(ms.location(SimpleData.class).whereEq("id", ms.var("vid")))
-        .with(ms.location(SimpleInfo.class)).build();
+      PreparedOperation operationTemplate =
+        ms.preparedOperation().want().step(SimpleData.class).whereEq("id", "vid").build().build();
 
       /* Execute a map */
 
       SimpleInfo info = new SimpleInfo("mike", "Mike", "Mansell");
-      SimpleData data = map.begin().var("vid", "mike").obj(info).run().get(SimpleData.class);
+      SimpleData data = operationTemplate.begin().var("vid", "mike").obj(info).run().get(SimpleData.class);
 
       /* Verify */
 

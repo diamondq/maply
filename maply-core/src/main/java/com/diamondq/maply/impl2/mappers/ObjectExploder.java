@@ -10,8 +10,8 @@ import com.diamondq.maply.spi2.MapInstruction;
 import com.diamondq.maply.spi2.MapInstructionProvider;
 import com.diamondq.maply.spi2.MappingProvider;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Parameter;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -19,20 +19,18 @@ import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
-
 /**
- * This MappingProvider is able to construct Java objects from their properties.
+ * This MappingProvider is able to explode Java objects into their properties.
  */
 @Singleton
-public class ObjectConstructor implements MapInstructionProvider, MappingProvider, MapInstruction {
+public class ObjectExploder implements MapInstructionProvider, MappingProvider, MapInstruction {
 
   private final ContextFactory       mContextFactory;
 
   private final NamingAdapterService mNamingAdapterService;
 
   @Inject
-  public ObjectConstructor(ContextFactory pContextFactory, NamingAdapterService pNamingAdapterService) {
+  public ObjectExploder(ContextFactory pContextFactory, NamingAdapterService pNamingAdapterService) {
     mContextFactory = pContextFactory;
     mNamingAdapterService = pNamingAdapterService;
   }
@@ -42,8 +40,8 @@ public class ObjectConstructor implements MapInstructionProvider, MappingProvide
    */
   @Override
   public void setup(MappingService pMappingService) {
-    try (Context ctx = mContextFactory.newContext(ObjectConstructor.class, this)) {
-      Location loc = pMappingService.location("/class:*").build();
+    try (Context ctx = mContextFactory.newContext(ObjectExploder.class, this)) {
+      Location loc = pMappingService.location("/class:*/*").build();
       pMappingService.register(Collections.singleton(loc), 1, this);
     }
   }
@@ -55,30 +53,45 @@ public class ObjectConstructor implements MapInstructionProvider, MappingProvide
   @Override
   public NeedsResult evaluateNeeds(MappingService pMappingService, Location pWant) {
     try (Context ctx =
-      mContextFactory.newContextWithMeta(ObjectConstructor.class, this, pWant, ContextBuilders.sNotIndented)) {
+      mContextFactory.newContextWithMeta(ObjectExploder.class, this, pWant, ContextBuilders.sNotIndented)) {
 
       /* Get the class */
 
-      Class<?> clazz = pWant.getFirstStepClass().get();
-
-      /* Figure out the constructor */
+      Location firstStep = pWant.getFirstStep();
 
       Set<Location> result = new HashSet<>();
-      for (Constructor<?> constructor : clazz.getConstructors()) {
-        @NonNull
-        Parameter[] parameters = constructor.getParameters();
-        for (Parameter param : parameters) {
-          String name = param.getName();
-          String updatedName = mNamingAdapterService.adaptConstructorParamName(param, name);
-          result.add(pMappingService.location(pWant.getXPath()).localName(updatedName).build());
+
+      Set<Location> additionalProvides = new HashSet<>();
+
+      Class<?> clazz = firstStep.getFirstStepClass().get();
+
+      /* Figure out the properties */
+
+      for (Field field : clazz.getFields()) {
+        if (Modifier.isPublic(field.getModifiers()) == true) {
+          additionalProvides
+            .add(pMappingService.location().step(clazz).localName(field.getName()).build().mergePredicates(pWant));
         }
       }
+      additionalProvides.remove(pWant);
+
+      // for (Constructor<?> constructor : clazz.getConstructors()) {
+      // @NonNull
+      // Parameter[] parameters = constructor.getParameters();
+      // for (Parameter param : parameters) {
+      // String name = param.getName();
+      // String updatedName = mNamingAdapterService.adaptConstructorParamName(param, name);
+      // result.add(pMappingService.location(pWant.getXPath()).localName(updatedName).build());
+      // }
+      // }
+      result.add(firstStep);
 
       StringBuilder sb = new StringBuilder();
-      sb.append("ObjConstructor(");
+      sb.append("ObjExploder(");
       sb.append(clazz.getSimpleName());
       sb.append(')');
-      return new NeedsResult(sb.toString(), result, Collections.emptySet(), this, 1);
+
+      return new NeedsResult(sb.toString(), result, additionalProvides, this, 1);
     }
   }
 
@@ -87,7 +100,7 @@ public class ObjectConstructor implements MapInstructionProvider, MappingProvide
    */
   @Override
   public void execute() {
-    try (Context ctx = mContextFactory.newContextWithMeta(ObjectConstructor.class, this)) {
+    try (Context ctx = mContextFactory.newContextWithMeta(ObjectExploder.class, this)) {
       throw new UnsupportedOperationException();
       // Map<Location, Object> result = new HashMap<>();
       // for (Location want : pWants) {

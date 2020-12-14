@@ -2,7 +2,6 @@ package com.diamondq.maply.impl2;
 
 import com.diamondq.maply.api2.DataType;
 import com.diamondq.maply.api2.Location;
-import com.diamondq.maply.api2.Variable;
 import com.diamondq.maply.spi2.MapInstruction;
 
 import java.util.List;
@@ -25,13 +24,15 @@ public class Instructions {
 
   public final List<MapInstructionDetails> instructions;
 
-  public final Set<Variable>               variableSet;
+  // public final Set<Variable> variableSet;
 
   public final Set<DataType>               objSet;
 
-  public Instructions(List<MapInstructionDetails> pInstructions, Set<Variable> pVariableSet, Set<DataType> pObjSet) {
+  public Instructions(List<MapInstructionDetails> pInstructions,
+    // Set<Variable> pVariableSet,
+    Set<DataType> pObjSet) {
     instructions = pInstructions;
-    variableSet = pVariableSet;
+    // variableSet = pVariableSet;
     objSet = pObjSet;
   }
 

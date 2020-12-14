@@ -28,11 +28,12 @@ public class MapResultImpl implements MapResult {
   @Override
   public <T> T get(Class<T> pClass) {
     try (Context ctx = mContextFactory.newContext(MapResultImpl.class, this, pClass)) {
-      Location loc = mMappingService.locationFromClass(pClass);
-      Object dataObj = mData.get(loc);
-      @SuppressWarnings("unchecked")
-      T data = (T) dataObj;
-      return data;
+      // Location loc = mMappingService.locationFromClass(pClass);
+      // Object dataObj = mData.get(loc);
+      // @SuppressWarnings("unchecked")
+      // T data = (T) dataObj;
+      // return data;
+      return null;
     }
   }
 

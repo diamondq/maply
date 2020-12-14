@@ -3,8 +3,8 @@ package com.diamondq.maply.impl2;
 import com.diamondq.common.context.Context;
 import com.diamondq.common.context.ContextFactory;
 import com.diamondq.maply.api2.DataType;
-import com.diamondq.maply.api2.ExecutionBuilder;
 import com.diamondq.maply.api2.MapResult;
+import com.diamondq.maply.api2.operationbuilder.ExecutionBuilder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,14 +15,14 @@ public class ExecutionBuilderImpl implements ExecutionBuilder {
 
   private final MappingServiceImpl    mMappingService;
 
-  private final PreparedMapImpl       mPreparedMap;
+  private final PreparedOperationImpl mPreparedMap;
 
   private final Map<String, Object>   mVars;
 
   private final Map<DataType, Object> mObjs;
 
   public ExecutionBuilderImpl(ContextFactory pContextFactory, MappingServiceImpl pMappingService,
-    PreparedMapImpl pPreparedMap) {
+    PreparedOperationImpl pPreparedMap) {
     mContextFactory = pContextFactory;
     mMappingService = pMappingService;
     mPreparedMap = pPreparedMap;
@@ -31,7 +31,7 @@ public class ExecutionBuilderImpl implements ExecutionBuilder {
   }
 
   /**
-   * @see com.diamondq.maply.api2.ExecutionBuilder#var(java.lang.String, java.lang.Object)
+   * @see com.diamondq.maply.api2.operationbuilder.ExecutionBuilder#var(java.lang.String, java.lang.Object)
    */
   @Override
   public ExecutionBuilder var(String pVarName, Object pValue) {
@@ -42,19 +42,19 @@ public class ExecutionBuilderImpl implements ExecutionBuilder {
   }
 
   /**
-   * @see com.diamondq.maply.api2.ExecutionBuilder#obj(java.lang.Object)
+   * @see com.diamondq.maply.api2.operationbuilder.ExecutionBuilder#obj(java.lang.Object)
    */
   @Override
   public ExecutionBuilder obj(Object pObj) {
     try (Context ctx = mContextFactory.newContext(ExecutionBuilderImpl.class, this, pObj)) {
-      DataType dataType = mMappingService.dataType(pObj);
-      mObjs.put(dataType, pObj);
+      // DataType dataType = mMappingService.dataType(pObj);
+      // mObjs.put(dataType, pObj);
       return this;
     }
   }
 
   /**
-   * @see com.diamondq.maply.api2.ExecutionBuilder#run()
+   * @see com.diamondq.maply.api2.operationbuilder.ExecutionBuilder#run()
    */
   @Override
   public MapResult run() {

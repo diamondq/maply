@@ -2,34 +2,34 @@ package com.diamondq.maply.impl2;
 
 import com.diamondq.common.context.Context;
 import com.diamondq.common.context.ContextFactory;
-import com.diamondq.maply.api2.DataType;
 import com.diamondq.maply.api2.Location;
-import com.diamondq.maply.api2.LocationBuilder;
 import com.diamondq.maply.api2.MappingService;
-import com.diamondq.maply.api2.PreparedMap;
-import com.diamondq.maply.api2.PreparedMapBuilder;
-import com.diamondq.maply.api2.Variable;
-import com.diamondq.maply.api2.Where;
-import com.diamondq.maply.impl2.Instructions.MapInstructionDetails;
+import com.diamondq.maply.api2.PreparedOperation;
+import com.diamondq.maply.api2.ToStringIndented;
+import com.diamondq.maply.api2.operationbuilder.PreparedOperationBuilder;
+import com.diamondq.maply.api2.operationbuilder.XPathBuilder;
+import com.diamondq.maply.impl2.jxpath.DQJXPathCompiledExpression;
+import com.diamondq.maply.impl2.jxpath.LocationImpl;
 import com.diamondq.maply.spi.ContextBuilders;
+import com.diamondq.maply.spi2.MapInstruction;
 import com.diamondq.maply.spi2.MapInstructionProvider;
+import com.diamondq.maply.spi2.MapInstructionProvider.NeedsResult;
 import com.diamondq.maply.spi2.MappingProvider;
-import com.google.common.base.Objects;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.Stack;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.apache.tika.mime.MediaType;
+import org.apache.commons.jxpath.JXPathContext;
+import org.apache.commons.math3.util.Combinations;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 @Singleton
@@ -48,47 +48,33 @@ public class MappingServiceImpl implements MappingService {
   }
 
   /**
-   * @see com.diamondq.maply.api2.MappingService#var(java.lang.String)
+   * @see com.diamondq.maply.api2.MappingService#location()
    */
   @Override
-  public Variable var(String pName) {
-    return new Variable(pName);
+  public XPathBuilder<Location> location() {
+    return new XPathBuilder<Location>(null, (xpath) -> {
+      return new LocationImpl((DQJXPathCompiledExpression) JXPathContext.compile(xpath));
+    });
   }
 
   /**
-   * @see com.diamondq.maply.api2.MappingService#preparedMap()
+   * @see com.diamondq.maply.api2.MappingService#location(java.lang.String)
    */
   @Override
-  public PreparedMapBuilder preparedMap() {
+  public XPathBuilder<Location> location(String pPath) {
+    return new XPathBuilder<Location>(pPath, (xpath) -> {
+      return new LocationImpl((DQJXPathCompiledExpression) JXPathContext.compile(xpath));
+    });
+  }
+
+  /**
+   * @see com.diamondq.maply.api2.MappingService#preparedOperation()
+   */
+  @Override
+  public PreparedOperationBuilder preparedOperation() {
     try (Context ctx = mContextFactory.newContext(MappingServiceImpl.class, this)) {
-      return new MappingBuilderImpl(mContextFactory, this);
+      return new PreparedOperationBuilderImpl(mContextFactory, this::prepare);
     }
-  }
-
-  /**
-   * @see com.diamondq.maply.api2.MappingService#location(java.lang.Class)
-   */
-  @Override
-  public LocationBuilder location(Class<?> pClass) {
-    try (Context ctx = mContextFactory.newContext(MappingServiceImpl.class, this, pClass)) {
-      LocationBuilder builder = new LocationBuilderImpl(mContextFactory);
-      builder = builder.classEq(pClass);
-      return builder;
-    }
-  }
-
-  public Location locationFromClass(Class<?> pClass) {
-    try (Context ctx = mContextFactory.newContext(MappingServiceImpl.class, this, pClass)) {
-      Location result = locationFromLocationBuilder(new LocationBuilderImpl(mContextFactory).classEq(pClass));
-      return ctx.exit(result, ContextBuilders.sNotIndented);
-    }
-  }
-
-  private Location locationFromLocationBuilder(LocationBuilderImpl pBuilder) {
-    DataType dataType = pBuilder.getDataType();
-    List<Where> wheres = pBuilder.wheres;
-    MediaType format = pBuilder.getFormat();
-    return new Location(dataType, format, ImmutableList.copyOf(wheres));
   }
 
   /**
@@ -97,83 +83,126 @@ public class MappingServiceImpl implements MappingService {
    * @param pMappingBuilderImpl the mapping builder
    * @return the PreparedMap
    */
-  public PreparedMap prepare(MappingBuilderImpl pMappingBuilderImpl) {
+  private PreparedOperation prepare(PreparedOperationBuilderImpl pMappingBuilderImpl) {
     try (Context ctx = mContextFactory.newContext(MappingServiceImpl.class, this, pMappingBuilderImpl)) {
 
-      ImmutableList.Builder<Location> lbuilder = ImmutableList.builder();
-      for (LocationBuilderImpl lb : pMappingBuilderImpl.wants) {
-        lbuilder.add(locationFromLocationBuilder(lb));
+      ImmutableSet.Builder<Location> lbuilder = ImmutableSet.builder();
+      for (DQJXPathCompiledExpression expr : pMappingBuilderImpl.wants) {
+        lbuilder.add(new LocationImpl(expr));
       }
-      ImmutableList<Location> wantList = lbuilder.build();
+      ImmutableSet<Location> wantList = lbuilder.build();
 
-      lbuilder = ImmutableList.builder();
-      for (LocationBuilderImpl lb : pMappingBuilderImpl.withs) {
-        lbuilder.add(locationFromLocationBuilder(lb));
-      }
-      ImmutableList<Location> withList = lbuilder.build();
+      // lbuilder = ImmutableSet.builder();
+      // for (LocationBuilderImpl lb : pMappingBuilderImpl.withs) {
+      // lbuilder.add(locationFromLocationBuilder(lb));
+      // }
+      // ImmutableList<Location> withList = lbuilder.build();
 
-      return new PreparedMapImpl(mContextFactory, this, wantList, withList);
-    }
-  }
-
-  @SuppressWarnings("unused")
-  private void recursiveSearch(LocationBuilderImpl pLB) {
-    try (Context ctx = mContextFactory.newContext(MappingServiceImpl.class, this, pLB)) {
-      DataType dataType = pLB.getDataType();
-
-      /* Search through all the providers to see if anyone can provide the given data type */
-
-    }
-  }
-
-  public DataType dataType(Object pObj) {
-    try (Context ctx = mContextFactory.newContext(MappingServiceImpl.class, this, pObj)) {
-      return locationFromClass(pObj.getClass()).dataType;
+      return new PreparedOperationImpl(mContextFactory, this, wantList);
     }
   }
 
   /**
-   * @see com.diamondq.maply.api2.MappingService#dataType(java.lang.String, java.lang.String, java.lang.String,
-   *      java.lang.Object)
-   */
-  @Override
-  public DataType dataType(String pNamespace, String pName, @Nullable String pChild, @Nullable Object pData) {
-    return new DataType(pNamespace, pName, pChild, pData);
-  }
-
-  /**
-   * @see com.diamondq.maply.api2.MappingService#location(com.diamondq.maply.api2.DataType,
-   *      org.apache.tika.mime.MediaType, java.util.List)
-   */
-  @Override
-  public Location location(DataType pDataType, @Nullable MediaType pFormat, List<Where> pWhere) {
-    return new Location(pDataType, pFormat, pWhere);
-  }
-
-  /**
-   * @see com.diamondq.maply.api2.MappingService#register(java.util.List, int,
+   * @see com.diamondq.maply.api2.MappingService#register(java.util.Set, int,
    *      com.diamondq.maply.spi2.MapInstructionProvider)
    */
   @Override
-  public void register(List<Location> pProvides, int pPriority, MapInstructionProvider pProvider) {
+  public void register(Set<Location> pProvides, int pPriority, MapInstructionProvider pProvider) {
     try (Context ctx = mContextFactory.newContextWithMeta(MappingServiceImpl.class, this, pProvides,
-      ContextBuilders.sNotIndentedCol, ContextBuilders.sNotIndentedCol, pPriority, null, pProvider, null)) {
+      ContextBuilders.sNotIndentedCol, pPriority, null, pProvider, null)) {
       mRegistrations.add(new Registration(pProvides, pPriority, pProvider));
     }
   }
 
-  private static class A {
+  public static class GenerateInfo {
 
-    public final List<Location>              pendingWants;
+    public final Set<Location> seenWantList;
 
-    public final List<Location>              withs;
+    public final Set<Location> wantList;
 
-    public final List<MapInstructionDetails> instructions;
+    public final String        debugName;
 
-    public A(List<Location> pWantList, List<Location> pWithList, List<MapInstructionDetails> pInstructions) {
-      pendingWants = new ArrayList<>(pWantList);
-      withs = new ArrayList<>(pWithList);
-      instructions = new ArrayList<>(pInstructions);
+    public GenerateInfo(Set<Location> pSeenWantList, Set<Location> pWantList, String pDebugName) {
+      super();
+      seenWantList = pSeenWantList;
+      wantList = pWantList;
+      debugName = pDebugName;
+    }
+
+  }
+
+  public static class InstructionStage implements ToStringIndented {
+    public final String                    name;
+
+    public final @Nullable MapInstruction  mapInstruction;
+
+    public final List<PossibleInstruction> nextInstructions;
+
+    public InstructionStage(String pName, @Nullable MapInstruction pMapInstruction,
+      List<PossibleInstruction> pNextInstructions) {
+      name = pName;
+      mapInstruction = pMapInstruction;
+      nextInstructions = pNextInstructions;
+    }
+
+    /**
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+      return toStringIndented(new StringBuilder(), "  ", true).toString();
+    }
+
+    /**
+     * @see com.diamondq.maply.api2.ToStringIndented#toStringIndented(java.lang.StringBuilder, java.lang.String,
+     *      boolean)
+     */
+    @Override
+    public StringBuilder toStringIndented(StringBuilder pSB, String pIndexStr, boolean pWithIndenting) {
+      pSB = pSB.append("{\"name\": \"").append(name).append("\", ");
+      if (pWithIndenting)
+        pSB = pSB.append("\n").append(pIndexStr);
+      pSB = pSB.append("\"next\": [");
+      for (PossibleInstruction pi : nextInstructions)
+        pSB = pi.toStringIndented(pSB, pIndexStr + "  ", pWithIndenting);
+      pSB = pSB.append("]}");
+      return pSB;
+    }
+
+  }
+
+  public static class PossibleInstruction implements ToStringIndented {
+    public final int                    priority;
+
+    public final List<InstructionStage> instructions;
+
+    public PossibleInstruction(int pPriority, List<InstructionStage> pInstructions) {
+      priority = pPriority;
+      instructions = pInstructions;
+    }
+
+    /**
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+      return toStringIndented(new StringBuilder(), "  ", true).toString();
+    }
+
+    /**
+     * @see com.diamondq.maply.api2.ToStringIndented#toStringIndented(java.lang.StringBuilder, java.lang.String,
+     *      boolean)
+     */
+    @Override
+    public StringBuilder toStringIndented(StringBuilder pSB, String pIndexStr, boolean pWithIndenting) {
+      pSB = pSB.append("{\"priority\": \"").append(priority).append("\", ");
+      if (pWithIndenting)
+        pSB = pSB.append("\n").append(pIndexStr);
+      pSB = pSB.append("\"possible\": [");
+      for (InstructionStage i : instructions)
+        pSB = i.toStringIndented(pSB, pIndexStr + "  ", pWithIndenting);
+      pSB = pSB.append("]}");
+      return pSB;
     }
 
   }
@@ -184,225 +213,224 @@ public class MappingServiceImpl implements MappingService {
    * 
    * @param pPreparedMapImpl the PreparedMap
    * @param pWantList the wants
-   * @param pWithList the withs
    * @return the instructions
    */
-  public Instructions generateInstructions(PreparedMapImpl pPreparedMapImpl, List<Location> pWantList,
-    List<Location> pWithList) {
+  public Instructions generateInstructions(PreparedOperationImpl pPreparedMapImpl, Set<Location> pWantList
+  // , List<Location> pWithList
+  ) {
     try (Context ctx = mContextFactory.newContextWithMeta(MappingServiceImpl.class, this, pPreparedMapImpl, null,
-      pWantList, ContextBuilders.sNotIndentedCol, pWithList, ContextBuilders.sNotIndentedCol)) {
+      pWantList, ContextBuilders.sNotIndentedCol)) {
 
-      List<MapInstructionDetails> instrs = new ArrayList<>();
-      Set<Variable> requiredVariables = new HashSet<>();
-      Set<DataType> requiredObjs = new HashSet<>();
+      Set<Location> seenWantList = new HashSet<>();
+      seenWantList.addAll(pWantList);
+      List<PossibleInstruction> results = recursiveGenerate(new GenerateInfo(seenWantList, pWantList, ""));
+      ctx.debug("Results: {}", results);
 
-      Stack<A> stack = new Stack<>();
-      A work = new A(pWantList, pWithList, Collections.emptyList());
-
-      while (work.pendingWants.isEmpty() == false) {
-
-        /* Take the top want */
-
-        Location testWant = work.pendingWants.get(0);
-
-        /* Find any registered that is capable of supply the want */
-
-        int highestPriority = Integer.MIN_VALUE;
-        Registration highestReg = null;
-        Location highestLoc = null;
-        for (Registration reg : mRegistrations) {
-
-          /* Does this registration provide the want? */
-
-          for (Location regWant : reg.provides) {
-            Optional<Location> matchOpt = wantMatching(regWant, testWant);
-            if (matchOpt.isPresent() == true) {
-
-              /* It does. What 'needs' does it require */
-
-              Location actualWant = matchOpt.get();
-              List<Location> actualNeeds = reg.provider.evaluateNeeds(this, actualWant);
-
-              /* Can its needs be met? */
-
-              List<Location> list = new ArrayList<>();
-              boolean isFirst = true;
-              for (Location l : work.pendingWants) {
-                if (isFirst == true)
-                  isFirst = false;
-                else
-                  list.add(l);
-              }
-              for (Location l : actualNeeds) {
-                list.add(0, l);
-              }
-
-              A newWork = new A(list, work.withs, work.instructions);
-              stack.push(newWork);
-
-              // for (Location testNeed : reg.needs) {
-              // generateInstr(testNeed, pWithList);
-              // }
-
-              if (highestPriority < reg.priority) {
-                highestPriority = reg.priority;
-                highestReg = reg;
-                highestLoc = actualWant;
-                break;
-              }
-            }
-          }
-        }
-
-        if ((highestReg == null) || (highestLoc == null))
-          throw new IllegalStateException("No such path to generate " + testWant.toString() + " with " + pWithList);
-
-      }
-      // for (Location want : pWantList) {
-      // MapInstructionDetails instr = generateInstr(want, pWithList);
-      // instrs.add(instr);
-      // }
-      return new Instructions(instrs, requiredVariables, requiredObjs);
     }
+
+    throw new IllegalStateException();
+    // return new Instructions(instrs, requiredObjs);
   }
 
-  private MapInstructionDetails generateInstr(Location pWant, List<Location> pWithList) {
-    try (Context ctx = mContextFactory.newContextWithMeta(MappingServiceImpl.class, this, pWant,
-      ContextBuilders.sNotIndented, pWithList, ContextBuilders.sNotIndentedCol)) {
+  private List<Set<Location>> permutations(Set<Location> pWants) {
+    List<Set<Location>> results = new ArrayList<>();
+    int size = pWants.size();
+    for (int i = size; i > 0; i--) {
+      Combinations combinations = new Combinations(size, i);
+      for (int[] entry : combinations) {
+        int offset = 0;
+        int matchOffset = 0;
+        Set<Location> match = new HashSet<>();
+        for (Location w : pWants) {
+          if (offset == entry[matchOffset]) {
+            match.add(w);
+            matchOffset++;
+            if (matchOffset == i)
+              break;
+          }
+          offset++;
+        }
+        results.add(match);
+      }
+    }
+
+    return results;
+  }
+
+  public static class Remember {
+
+    public final NeedsResult providerNeeds;
+
+    public final Location    actualWant;
+
+    public Remember(NeedsResult pProviderNeeds, Location pActualWant) {
+      providerNeeds = pProviderNeeds;
+      actualWant = pActualWant;
+    }
+
+  }
+
+  private List<PossibleInstruction> recursiveGenerate(GenerateInfo pInfo) {
+    try (Context ctx = mContextFactory.newContext(MappingServiceImpl.class, this)) {
+
+      ctx.debug("Attempting to at {}", pInfo.debugName);
 
       /* Find any registered that is capable of supply the want */
 
-      int highestPriority = Integer.MIN_VALUE;
-      Registration highestReg = null;
-      Location highestLoc = null;
-      for (Registration reg : mRegistrations) {
+      List<PossibleInstruction> generateResults = new ArrayList<>();
 
-        /* Does this registration provide the want? */
+      List<Set<Location>> permutations = permutations(pInfo.wantList);
+      for (Set<Location> permutation : permutations) {
 
-        for (Location testWant : reg.provides) {
-          Optional<Location> matchOpt = wantMatching(testWant, pWant);
-          if (matchOpt.isPresent() == true) {
+        Set<Location> mutatableWants = new HashSet<>(permutation);
 
-            /* It does. What 'needs' does it require */
+        List<Remember> remembered = new ArrayList<>();
 
-            Location actualWant = matchOpt.get();
-            List<Location> actualNeeds = reg.provider.evaluateNeeds(this, actualWant);
+        Set<Location> additionals = new HashSet<>();
 
-            /* Can its needs be met? */
+        for (Iterator<Location> wantIterator = mutatableWants.iterator(); wantIterator.hasNext();) {
+          Location testWant = wantIterator.next();
+          if (additionals.contains(testWant)) {
+            wantIterator.remove();
+            continue;
+          }
 
-            // for (Location testNeed : reg.needs) {
-            // generateInstr(testNeed, pWithList);
-            // }
+          /* Check to see if there is any registration that matches this */
 
-            if (highestPriority < reg.priority) {
-              highestPriority = reg.priority;
-              highestReg = reg;
-              highestLoc = actualWant;
-              break;
+          for (Registration reg : mRegistrations) {
+
+            /* Does this registration provide the want? */
+
+            for (Location regWant : reg.provides) {
+
+              Optional<Location> matchOpt = testWant.match(regWant);
+              if (matchOpt.isPresent() == true) {
+
+                /* It does. What 'needs' does it require, and what other wants does it provide */
+
+                Location actualWant = matchOpt.get();
+                NeedsResult providerNeeds = reg.provider.evaluateNeeds(this, actualWant);
+
+                /* After further analysis, the provider can't handle it */
+
+                if (providerNeeds.instruction == null)
+                  continue;
+
+                /*
+                 * If we've already seen the elements the providers needs, then we can't go back, so it can't be
+                 * resolved at this point.
+                 */
+                boolean alreadyDone = false;
+                for (Location newWant : providerNeeds.needs) {
+                  if (pInfo.seenWantList.contains(newWant)) {
+                    alreadyDone = true;
+                    break;
+                  }
+                }
+                if (alreadyDone == true)
+                  continue;
+
+                /* Ok, this is definitely a possibility. */
+
+                /* Remove this want from the want list */
+
+                wantIterator.remove();
+
+                additionals.addAll(providerNeeds.additionalProvides);
+                
+                /* Remember this provider */
+
+                remembered.add(new Remember(providerNeeds, actualWant));
+
+              }
             }
           }
         }
-      }
 
-      if ((highestReg == null) || (highestLoc == null))
-        throw new IllegalStateException("No such path to generate " + pWant.toString() + " with " + pWithList);
+        /* Were we able to handle all the wants? */
 
-      throw new UnsupportedOperationException();
-      // return new MapInstructionDetails(highestReg.provider, Collections.singletonList(highestLoc),
-      // Collections.emptyList());
-    }
-  }
+        if (mutatableWants.isEmpty() == false)
+          continue;
 
-  private Optional<Location> wantMatching(Location pThisWant, Location pThatWant) {
-    if (pThisWant == pThatWant)
-      return Optional.empty();
-    MediaType thisFormat = pThisWant.format;
-    MediaType thatFormat = pThatWant.format;
-    if (((thisFormat == null) && (thatFormat != null)) || ((thisFormat != null) && (thatFormat == null)))
-      return Optional.empty();
-    MediaType matchFormat;
-    if ((thisFormat != null) && (thatFormat != null)) {
-      String thisType = thisFormat.getType();
-      String thatType = thatFormat.getType();
-      if ((thisType.equals("*") == false) && (thatType.equals("*") == false)) {
-        if (thisType.equals(thatType) == false)
-          return Optional.empty();
-        String thisSubType = thisFormat.getSubtype();
-        String thatSubType = thatFormat.getSubtype();
-        if ((thisSubType.equals("*") == false) && (thatSubType.equals("*") == false)) {
-          if (thisSubType.equals(thatSubType) == false)
-            return Optional.empty();
-          matchFormat = thisFormat;
+        /* Build an updated want list */
+
+        Set<Location> newWantList = new HashSet<>();
+
+        for (Remember rem : remembered) {
+
+          newWantList.addAll(rem.providerNeeds.needs);
+
+        }
+
+        /* Add the remaining wants that weren't handled in this pass */
+
+        OLDWANTS: for (Location oldWant : pInfo.wantList) {
+
+          /* If the existing want matches us, then skip it */
+
+          if (permutation.contains(oldWant) == true)
+            continue;
+
+          /* If any of existing wants matches an additional provides, then clear those as well */
+
+          for (Remember rem : remembered)
+            if (rem.providerNeeds.additionalProvides.contains(oldWant) == true)
+              continue OLDWANTS;
+
+          newWantList.add(oldWant);
+        }
+
+        Set<Location> newSeenWantList = new HashSet<>(pInfo.seenWantList);
+        newSeenWantList.addAll(permutation);
+        for (Remember rem : remembered)
+          newSeenWantList.add(rem.actualWant);
+
+        /* Define a new debug name */
+
+        StringBuilder sb = new StringBuilder();
+        if (pInfo.debugName.isEmpty() == false) {
+          sb.append(pInfo.debugName);
+          sb.append(" -> ");
+        }
+        boolean first = true;
+        for (Remember rem : remembered) {
+          if (first == true)
+            first = false;
+          else
+            sb.append(",");
+          sb.append(rem.providerNeeds.name);
+        }
+        String newName = sb.toString();
+
+        if (newWantList.isEmpty() == false) {
+
+          /* We still have more wants to fulfill. Continue the recursion */
+
+          List<PossibleInstruction> childResults =
+            recursiveGenerate(new GenerateInfo(newSeenWantList, newWantList, newName));
+          if (childResults.isEmpty() == true) {
+            continue;
+          }
+
+          // generateResults.add(new InstructionPair(providerNeeds.name, providerNeeds.instruction,
+          // providerNeeds.priority, childResults));
         }
         else {
-          if (thisSubType.equals("*")) {
-            if (thatSubType.equals("*"))
-              throw new IllegalStateException(
-                "Unable to match against sub-type wildcards in both the 'this' and 'that'");
-            matchFormat = thatFormat;
-          }
-          else
-            matchFormat = thisFormat;
-        }
-      }
-      else {
-        if (thisType.equals("*")) {
-          if (thatType.equals("*"))
-            throw new IllegalStateException("Unable to match against type wildcards in both the 'this' and 'that'");
-          matchFormat = thatFormat;
-        }
-        else
-          matchFormat = thisFormat;
-      }
-    }
-    else
-      matchFormat = null;
 
-    DataType matchDataType;
-    if (pThisWant.dataType.namespace.equals(pThatWant.dataType.namespace) == false)
-      return Optional.empty();
-    if ((pThisWant.dataType.name.equals("*") == false) && (pThatWant.dataType.name.equals("*") == false)) {
-      if (pThisWant.dataType.name.equals(pThatWant.dataType.name) == false)
-        return Optional.empty();
-      if (pThisWant.dataType.name.equals("*"))
-        matchDataType = pThatWant.dataType;
-      else
-        matchDataType = pThisWant.dataType;
-    }
-    else {
-      if (pThisWant.dataType.name.equals("*")) {
-        if (pThatWant.dataType.name.equals("*"))
-          throw new IllegalStateException(
-            "Unable to match against a data type name with wildcards in both the 'this' and 'that'");
-        matchDataType = pThatWant.dataType;
+          /* We no longer have a want. Return a success */
+
+          // generateResults
+          // .add(new InstructionStage(providerNeeds.name, providerNeeds.instruction, Collections.emptyList()));
+        }
+
       }
-      else
-        matchDataType = pThisWant.dataType;
-    }
-    if (("*".equals(pThisWant.dataType.child) == false) && ("*".equals(pThatWant.dataType.child) == false)) {
-      if (Objects.equal(pThisWant.dataType.child, pThatWant.dataType.child) == false)
-        return Optional.empty();
-      if ("*".equals(pThisWant.dataType.child))
-        matchDataType =
-          new DataType(matchDataType.namespace, matchDataType.name, pThatWant.dataType.child, matchDataType.data);
-      else if ("*".equals(pThatWant.dataType.child))
-        matchDataType =
-          new DataType(matchDataType.namespace, matchDataType.name, pThisWant.dataType.child, matchDataType.data);
-    }
-    else {
-      if ("*".equals(pThisWant.dataType.child)) {
-        if ("*".equals(pThatWant.dataType.child))
-          throw new IllegalStateException(
-            "Unable to match against a data type child with wildcards in both the 'this' and 'that'");
-        matchDataType =
-          new DataType(matchDataType.namespace, matchDataType.name, pThatWant.dataType.child, matchDataType.data);
-      }
-      else if ("*".equals(pThatWant.dataType.child))
-        matchDataType =
-          new DataType(matchDataType.namespace, matchDataType.name, pThisWant.dataType.child, matchDataType.data);
+
+      if (generateResults.isEmpty() == true)
+        ctx.trace("<GEN> No match for {}", pInfo.debugName);
+
+      return generateResults;
     }
 
-    return Optional.of(new Location(matchDataType, matchFormat, pThisWant.where));
   }
 
 }

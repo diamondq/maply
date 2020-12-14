@@ -3,23 +3,23 @@ package com.diamondq.maply.impl2;
 import com.diamondq.maply.api2.Location;
 import com.diamondq.maply.api2.ToStringIndented;
 import com.diamondq.maply.spi2.MapInstructionProvider;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
-import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class Registration implements ToStringIndented {
 
-  public final List<Location>         provides;
+  public final Set<Location>          provides;
 
   public final int                    priority;
 
   public final MapInstructionProvider provider;
 
-  public Registration(List<Location> pProvides, int pPriority, MapInstructionProvider pProvider) {
-    provides = ImmutableList.copyOf(pProvides);
+  public Registration(Set<Location> pProvides, int pPriority, MapInstructionProvider pProvider) {
+    provides = ImmutableSet.copyOf(pProvides);
     priority = pPriority;
     provider = pProvider;
   }

@@ -1,93 +1,23 @@
 package com.diamondq.maply.api2;
 
-import java.util.List;
-import java.util.Objects;
+import java.util.Optional;
 
-import org.apache.tika.mime.MediaType;
-import org.checkerframework.checker.nullness.qual.Nullable;
+public interface Location extends ToStringIndented {
 
-public class Location implements ToStringIndented {
+  Optional<Location> match(Location pRegWant);
 
-  public final DataType            dataType;
+  public String getXPath();
 
-  public final @Nullable MediaType format;
-
-  public final List<Where>         where;
-
-  public Location(DataType pDataType, @Nullable MediaType pFormat, List<Where> pWhere) {
-    dataType = pDataType;
-    format = pFormat;
-    where = pWhere;
-  }
+  public Optional<Class<?>> getFirstStepClass();
 
   /**
-   * @see java.lang.Object#hashCode()
+   * For each predicate on each step in pWant, add them to the matching step (by order) in this and return the new
+   * updated Location. NOTE: Does not modify this. If the step count isn't the same, an error is thrown
+   * 
+   * @param pWant the Location with the predicates
+   * @return the new updated Location
    */
-  @Override
-  public int hashCode() {
-    return Objects.hash(dataType, format, where);
-  }
+  Location mergePredicates(Location pWant);
 
-  /**
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
-  @Override
-  public boolean equals(@Nullable Object pObj) {
-    if (this == pObj)
-      return true;
-    if (pObj == null)
-      return false;
-    if (getClass() != pObj.getClass())
-      return false;
-    Location obj = (Location) pObj;
-    return Objects.equals(dataType, obj.dataType) && Objects.equals(format, obj.format)
-      && Objects.equals(where, obj.where);
-  }
-
-  /**
-   * @see java.lang.Object#toString()
-   */
-  @Override
-  public String toString() {
-    return toStringIndented(new StringBuilder(), "  ", true).toString();
-  }
-
-  /**
-   * @see com.diamondq.maply.api2.ToStringIndented#toStringIndented(java.lang.StringBuilder, java.lang.String, boolean)
-   */
-  @Override
-  public StringBuilder toStringIndented(StringBuilder pSB, String pIndexStr, boolean pWithIndenting) {
-    pSB = pSB.append("{\"Location").append('@').append(Integer.toHexString(hashCode())).append("\":{");
-    if (pWithIndenting)
-      pSB = pSB.append("\n").append(pIndexStr);
-    pSB = pSB.append("\"dataType\": ");
-    dataType.toStringIndented(pSB, pIndexStr + "  ", pWithIndenting);
-    pSB = pSB.append(", ");
-    if (pWithIndenting)
-      pSB = pSB.append("\n").append(pIndexStr);
-    pSB = pSB.append("\"format\": ");
-    if (format == null)
-      pSB = pSB.append("null");
-    else
-      pSB = pSB.append("\"").append(format).append("\"");
-    pSB = pSB.append(", ");
-    if (pWithIndenting)
-      pSB = pSB.append("\n").append(pIndexStr);
-    pSB = pSB.append("\"where\": [");
-    boolean isFirst = true;
-    for (Where localWhere : where) {
-      if (isFirst == true)
-        isFirst = false;
-      else {
-        pSB = pSB.append(", ");
-        if (pWithIndenting)
-          pSB = pSB.append("\n").append(pIndexStr).append("  ");
-      }
-      pSB = localWhere.toStringIndented(pSB, pIndexStr + "    ", pWithIndenting);
-    }
-    if (pWithIndenting)
-      pSB = pSB.append("\n").append(pIndexStr).append("  ");
-    pSB = pSB.append("]}}");
-    return pSB;
-  }
+  Location getFirstStep();
 }

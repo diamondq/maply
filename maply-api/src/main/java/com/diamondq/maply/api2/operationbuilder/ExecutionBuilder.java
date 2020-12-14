@@ -1,4 +1,6 @@
-package com.diamondq.maply.api2;
+package com.diamondq.maply.api2.operationbuilder;
+
+import com.diamondq.maply.api2.MapResult;
 
 public interface ExecutionBuilder {
 
