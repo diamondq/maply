@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.diamondq.maply</groupId>
     <artifactId>maply-parent</artifactId>
-    <version>0.2.0-SNAPSHOT</version>
+    <version>${revision}${sha1}${changelist}</version>
     <relativePath>../maply-parent</relativePath>
   </parent>
   <artifactId>maply-test</artifactId>

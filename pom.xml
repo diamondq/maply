@@ -5,7 +5,7 @@
   <parent>
     <groupId>com.diamondq.maply</groupId>
     <artifactId>maply-masterparent</artifactId>
-    <version>0.2.0-SNAPSHOT</version>
+    <version>${revision}${sha1}${changelist}</version>
     <relativePath>maply-masterparent</relativePath>
   </parent>
   <artifactId>maply-root</artifactId>
@@ -17,9 +17,6 @@
     <module>maply-core</module>
     <module>maply-masterparent</module>
     <module>maply-parent</module>
-    <!--
-    <module>maply-pdf</module>
-    <module>maply-test</module>
-    -->
+    <!-- <module>maply-pdf</module> <module>maply-test</module> -->
   </modules>
 </project>

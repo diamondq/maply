@@ -4,117 +4,76 @@
   <parent>
     <groupId>com.diamondq</groupId>
     <artifactId>diamondq-parent</artifactId>
-    <version>[6.1-SNAPSHOT,7)</version>
+    <version>6.3.2</version>
     <relativePath>../../common-maven/diamondq-parent</relativePath>
   </parent>
   <groupId>com.diamondq.maply</groupId>
   <artifactId>maply-masterparent</artifactId>
-  <version>0.2.0-SNAPSHOT</version>
+  <version>${revision}${sha1}${changelist}</version>
   <packaging>pom</packaging>
   <name>DiamondQ Maply: Master Parent</name>
   <description>DiamondQ Maply</description>
   <properties>
+    <revision>0.3.0</revision>
+    <sha1 />
+    <changelist>-SNAPSHOT</changelist>
     <scm.project>maply</scm.project>
     <nexus.url>https://oss.sonatype.org</nexus.url>
     <nexus.serverId>ossrh</nexus.serverId>
     <nexus.auto.release>true</nexus.auto.release>
     <nexus.skip.staging>false</nexus.skip.staging>
   </properties>
-  <distributionManagement>
-    <snapshotRepository>
-      <id>ossrh-snap</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-    </snapshotRepository>
+  <repositories>
     <repository>
-      <id>ossrh</id>
-      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+      <id>dq-release</id>
+      <url>https://nexus.diamondq.com/repository/maven-public-releases/</url>
+      <releases>
+        <checksumPolicy>fail</checksumPolicy>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
     </repository>
-  </distributionManagement>
+  </repositories>
   <profiles>
     <profile>
-      <id>diamondq-jenkins</id>
+      <id>project-to-ossrh</id>
       <activation>
         <property>
-          <name>jenkins</name>
-          <value>true</value>
+          <name>[DIAMONDQ]</name>
+          <value>and(property(jenkins=true),property(deployossrh=true))</value>
         </property>
       </activation>
-      <repositories>
+      <properties>
+        <nexus.serverId>ossrh</nexus.serverId>
+        <nexus.url>https://oss.sonatype.org</nexus.url>
+      </properties>
+      <distributionManagement>
         <repository>
-          <id>1-dq-snapshot</id>
-          <url>https://nexus.diamondq.com/repository/maven-snapshots/</url>
-          <snapshots>
-            <enabled>true</enabled>
-            <updatePolicy>always</updatePolicy>
-          </snapshots>
-          <releases>
-            <enabled>false</enabled>
-          </releases>
+          <id>ossrh</id>
+          <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
-        <repository>
-          <id>2-dq-release</id>
-          <url>https://nexus.diamondq.com/repository/maven-public/</url>
-          <snapshots>
-            <enabled>false</enabled>
-          </snapshots>
-        </repository>
-        <repository>
-          <id>ossrh-snap</id>
-          <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-          <snapshots>
-            <enabled>true</enabled>
-            <updatePolicy>always</updatePolicy>
-          </snapshots>
-          <releases>
-            <enabled>false</enabled>
-          </releases>
-        </repository>
-      </repositories>
-      <pluginRepositories>
-        <pluginRepository>
-          <id>ossrh-snap</id>
-          <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-          <snapshots>
-            <enabled>true</enabled>
-            <updatePolicy>always</updatePolicy>
-          </snapshots>
-          <releases>
-            <enabled>false</enabled>
-          </releases>
-        </pluginRepository>
-      </pluginRepositories>
+      </distributionManagement>
     </profile>
     <profile>
-      <id>diamondq-default</id>
+      <id>project-to-dq</id>
       <activation>
-        <activeByDefault>true</activeByDefault>
+        <property>
+          <name>[DIAMONDQ]</name>
+          <value>and(property(jenkins=true),not(property(deployossrh=true)))</value>
+        </property>
       </activation>
-      <repositories>
+      <properties>
+        <nexus.serverId>dq-release</nexus.serverId>
+        <nexus.url>https://nexus.diamondq.com/repository/maven-public-releases</nexus.url>
+        <nexus.skip.staging>true</nexus.skip.staging>
+      </properties>
+      <distributionManagement>
         <repository>
-          <id>ossrh-snap</id>
-          <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-          <snapshots>
-            <enabled>true</enabled>
-            <updatePolicy>daily</updatePolicy>
-          </snapshots>
-          <releases>
-            <enabled>false</enabled>
-          </releases>
+          <id>dq-release</id>
+          <url>https://nexus.diamondq.com/repository/maven-public-releases/</url>
         </repository>
-      </repositories>
-      <pluginRepositories>
-        <pluginRepository>
-          <id>ossrh-snap</id>
-          <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-          <snapshots>
-            <enabled>true</enabled>
-            <updatePolicy>daily</updatePolicy>
-          </snapshots>
-          <releases>
-            <enabled>false</enabled>
-          </releases>
-        </pluginRepository>
-      </pluginRepositories>
+      </distributionManagement>
     </profile>
   </profiles>
 </project>
