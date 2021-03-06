@@ -17,14 +17,14 @@
       <dependency>
         <groupId>com.diamondq.common</groupId>
         <artifactId>common-bom</artifactId>
-        <version>0.3.246-63904dd</version>
+        <version>0.3.247-2db05db</version>
         <scope>import</scope>
         <type>pom</type>
       </dependency>
       <dependency>
         <groupId>org.junit</groupId>
         <artifactId>junit-bom</artifactId>
-        <version>5.2.0</version>
+        <version>5.7.1</version>
         <scope>import</scope>
         <type>pom</type>
       </dependency>
